@@ -7,7 +7,7 @@ import { gql, useQuery } from "@apollo/client";
 import classes from "../styles/City.module.scss";
 import { Card } from "antd";
 import { DUMMY_DATA } from "../assets/icons";
-
+import { getCityByName } from "../types/types";
 type Props = {};
 const GET_CITY = gql`
   query getCityByName($name: String!) {
@@ -53,12 +53,15 @@ const day =
 function MainPage({}: Props) {
   const router = useRouter().query;
   const routing = useRouter();
-  const { loading, error, data } = useQuery(GET_CITY, {
-    variables: {
-      name: router.id,
-    },
-  });
-  var date = new Date(data?.getCityByName?.weather?.timestamp);
+  const { loading, error, data } = useQuery<getCityByName | undefined>(
+    GET_CITY,
+    {
+      variables: {
+        name: router.id,
+      },
+    }
+  );
+  var date = new Date(Number(data?.getCityByName?.weather?.timestamp));
   if (loading)
     return (
       <h1 style={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
@@ -79,10 +82,11 @@ function MainPage({}: Props) {
   //     return "";
   //   }
   // }, [data]);
+  console.log(data);
   const weather = (
     <h2 style={{ color: "black", fontWeight: "bold", textAlign: "left" }}>
       Weather today in {data?.getCityByName?.name}, &nbsp;
-      {regionNames.of(data?.getCityByName?.country || "")}
+      {regionNames.of(data?.getCityByName?.country?.toString() || "")}
     </h2>
   );
 
@@ -96,8 +100,7 @@ function MainPage({}: Props) {
       }}
     >
       {(
-        parseFloat(data?.getCityByName?.weather?.temperature?.feelsLike) -
-        273.15
+        Number(data?.getCityByName?.weather?.temperature?.feelsLike) - 273.15
       ).toFixed(0)}
       °
       <p style={{ fontSize: "0.3em", margin: "auto", fontWeight: "normal" }}>
@@ -174,9 +177,8 @@ function MainPage({}: Props) {
                 Temperature
                 <span>
                   {(
-                    parseFloat(
-                      data?.getCityByName?.weather?.temperature?.actual
-                    ) - 273.15
+                    Number(data?.getCityByName?.weather?.temperature?.actual) -
+                    273.15
                   ).toFixed(0)}
                   °
                 </span>
@@ -208,9 +210,8 @@ function MainPage({}: Props) {
                 Visibility
                 <span>
                   {(
-                    parseFloat(
-                      data?.getCityByName?.weather?.clouds?.visibility
-                    ) / 1000
+                    Number(data?.getCityByName?.weather?.clouds?.visibility) /
+                    1000
                   ).toFixed(2)}{" "}
                   km
                 </span>
